@@ -46,6 +46,16 @@ NEXT_PUBLIC_SITE_URL=https://your-domain
 Without it, `metadataBase` falls back to `http://localhost:3000` and the
 WhatsApp/Facebook preview image will not load. Nothing else is required.
 
+## Music
+
+The track starts on the seal tap and fades in over the curtain draw. It has to
+begin inside that tap: mobile browsers block audio that starts outside a user
+gesture, so it cannot wait for the curtain to finish. A sound on/off control
+sits bottom-right — a guest may well open this somewhere quiet.
+
+`public/audio/ascension.mp3` is a 128 kbps encode of the master (7.8 MB → 4.0 MB).
+Masters kept at the repo root are gitignored; only the encode ships.
+
 ## Notes
 
 - `POST /api/messages` validates with zod and appends to an in-memory array.

@@ -35,6 +35,12 @@ export const invitation: Invitation = {
     blessing: "InSha'Allah to be held on",
   },
 
+  /** Begins on the seal tap and swells in as the curtain draws. */
+  music: {
+    src: "/audio/ascension.mp3",
+    title: "Ascension by Humblebee",
+  },
+
   gallery: [
     {
       src: "/images/gallery-1.png",

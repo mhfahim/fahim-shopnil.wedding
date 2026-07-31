@@ -22,6 +22,12 @@ export interface RevealCard {
   blessing: string;
 }
 
+export interface Music {
+  src: string;
+  /** Named on the sound toggle, so the control says what it silences. */
+  title: string;
+}
+
 export interface GalleryImage {
   src: string;
   alt: string;
@@ -50,6 +56,7 @@ export interface Invitation {
   welcome: string;
   weddingDate: IsoDateTime;
   revealCard: RevealCard;
+  music: Music;
   gallery: GalleryImage[];
   timeline: TimelineEntry[];
   venue: Venue;

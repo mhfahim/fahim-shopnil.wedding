@@ -8,6 +8,12 @@ import { useReducedMotion } from "@/hooks/useReducedMotion";
 
 interface CurtainRevealProps {
   seal: Seal;
+  /**
+   * Fires synchronously inside the tap, before any animation. The music
+   * has to start here: mobile browsers block audio that begins outside a
+   * user gesture, so it cannot wait for the curtain to finish.
+   */
+  onOpen: () => void;
   /** Fires once the curtain has fully cleared. */
   onRevealed: () => void;
 }
@@ -27,7 +33,11 @@ const HALF_BACKGROUND = { backgroundSize: "100vw 100svh" } as const;
 const PLEATS =
   "repeating-linear-gradient(90deg, rgba(0,0,0,0.22) 0px, rgba(0,0,0,0) 14px, rgba(255,255,255,0.07) 26px, rgba(0,0,0,0) 38px, rgba(0,0,0,0.22) 52px)";
 
-export function CurtainReveal({ seal, onRevealed }: CurtainRevealProps) {
+export function CurtainReveal({
+  seal,
+  onOpen,
+  onRevealed,
+}: CurtainRevealProps) {
   const [phase, setPhase] = useState<Phase>("idle");
   const reduced = useReducedMotion();
 
@@ -44,6 +54,9 @@ export function CurtainReveal({ seal, onRevealed }: CurtainRevealProps) {
 
   const open = () => {
     if (phase !== "idle") return;
+
+    // First thing, still inside the tap's call stack.
+    onOpen();
 
     if (reduced) {
       setPhase("gone");

@@ -24,6 +24,11 @@
 .DS_Store
 *.pem
 
+# audio masters kept at the repo root; the encoded copy that ships lives
+# in public/audio and is committed
+/*.mp3
+/*.wav
+
 # debug
 npm-debug.log*
 yarn-debug.log*
