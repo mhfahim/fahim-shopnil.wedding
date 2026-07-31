@@ -29,8 +29,17 @@ const marcellus = Marcellus({
 const names = coupleNames(invitation.bride, invitation.groom);
 const dateLabel = formatLongDate(invitation.weddingDate);
 
-/** Set NEXT_PUBLIC_SITE_URL at deploy time so OG images resolve absolutely. */
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+/**
+ * Link previews need an absolute URL. On Vercel this resolves itself from the
+ * project's own production domain, so the free *.vercel.app address works with
+ * no configuration. NEXT_PUBLIC_SITE_URL only matters if a custom domain is
+ * added later. Metadata is evaluated on the server, so no NEXT_PUBLIC_ prefix
+ * is needed to read the Vercel variable.
+ */
+const productionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (productionUrl ? `https://${productionUrl}` : "http://localhost:3000");
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
