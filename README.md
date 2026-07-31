@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shopnil &amp; Fahim — wedding invitation
 
-## Getting Started
+A single-page digital wedding invitation. Friday, 4 September 2026 at Senakunja,
+Dhaka Cantonment.
 
-First, run the development server:
+Built with Next.js 16 (App Router), TypeScript, Tailwind v4 and Framer Motion.
+
+## Mobile only
+
+This is deliberately not responsive to desktop. Every guest opens it on a phone,
+so the page is a single column capped at `--container-phone` (480px) and the type
+scale is tuned for 360–480px. On a wider screen it renders as a centred phone
+column on a dark field. Verified at 360, 375, 390, 412, 414, 430, 440 and 480px.
+
+## Editing the content
+
+Everything a guest reads lives in [`data/invitation.ts`](data/invitation.ts).
+Change a field there and it updates everywhere it appears — the countdown target,
+the scratch-card date, the page title and the social preview all derive from it.
+Components hold no content strings, only UI microcopy.
+
+Dates are formatted through [`lib/date.ts`](lib/date.ts) with `Intl`, pinned to
+`Asia/Dhaka`, so a guest abroad still sees local wedding time.
+
+`displayName` is the single name shown large in the hero; it is stored rather
+than derived, because a call-name is often not the first word of a full name.
+
+## Running it
+
+```bash
+npm install
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Deploying
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Set one environment variable in Vercel so link previews resolve absolutely:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+NEXT_PUBLIC_SITE_URL=https://your-domain
+```
 
-## Learn More
+Without it, `metadataBase` falls back to `http://localhost:3000` and the
+WhatsApp/Facebook preview image will not load. Nothing else is required.
 
-To learn more about Next.js, take a look at the following resources:
+## Notes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `POST /api/messages` validates with zod and appends to an in-memory array.
+  Messages are lost on restart — swap it for a database or a Google Sheet
+  webhook before relying on it. The marker is in
+  [`app/api/messages/route.ts`](app/api/messages/route.ts).
+- Images live in `public/images`; see
+  [`public/images/README.md`](public/images/README.md) for sizes and ratios.
+- The venue map is driven by a text query, not coordinates, in
+  [`data/invitation.ts`](data/invitation.ts).

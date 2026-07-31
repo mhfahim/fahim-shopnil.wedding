@@ -1,65 +1,73 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useCallback, useRef, useState } from "react";
+import { MotionConfig } from "framer-motion";
+import { invitation } from "@/data/invitation";
+import { CurtainReveal } from "@/components/CurtainReveal";
+import { HeroSection } from "@/components/HeroSection";
+import { WelcomeMessage } from "@/components/WelcomeMessage";
+import { ScratchReveal } from "@/components/ScratchReveal";
+import { ImageSlider } from "@/components/ImageSlider";
+import { Countdown } from "@/components/Countdown";
+import { Timeline } from "@/components/Timeline";
+import { VenueSection } from "@/components/VenueSection";
+import { MessageForm } from "@/components/MessageForm";
+import { ClosingSection } from "@/components/ClosingSection";
+
+export default function Page() {
+  const [opened, setOpened] = useState(false);
+  const heroHeadingRef = useRef<HTMLHeadingElement>(null);
+
+  const onRevealed = useCallback(() => {
+    setOpened(true);
+    heroHeadingRef.current?.focus({ preventScroll: true });
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    // The globals.css media query only reaches CSS animation; this is what
+    // stops Framer Motion moving anything for guests who ask it not to.
+    <MotionConfig reducedMotion="user">
+      {!opened ? (
+        <CurtainReveal seal={invitation.seal} onRevealed={onRevealed} />
+      ) : null}
+
+      {/* One phone-width column. This invitation is never opened on a
+          desktop, so there is no wider layout to fall back to. */}
+      <main className="mx-auto w-full max-w-phone bg-cream-50">
+        <HeroSection
+          intro={invitation.intro}
+          bride={invitation.bride}
+          groom={invitation.groom}
+          headingRef={heroHeadingRef}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+        <WelcomeMessage welcome={invitation.welcome} />
+
+        <ScratchReveal
+          card={invitation.revealCard}
+          weddingDate={invitation.weddingDate}
+        />
+
+        <ImageSlider images={invitation.gallery} />
+
+        <Countdown
+          targetIso={invitation.weddingDate}
+          closing={invitation.closing}
+        />
+
+        <Timeline entries={invitation.timeline} />
+
+        <VenueSection venue={invitation.venue} />
+
+        <MessageForm />
+
+        <ClosingSection
+          closing={invitation.closing}
+          bride={invitation.bride}
+          groom={invitation.groom}
+          weddingDate={invitation.weddingDate}
+        />
       </main>
-    </div>
+    </MotionConfig>
   );
 }
