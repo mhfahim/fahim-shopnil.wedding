@@ -54,6 +54,27 @@ function reply(payload) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+/**
+ * Health check. Open the /exec URL in a browser and you get JSON telling you
+ * whether the script can see the Sheet and whether a token has been set.
+ * It never reveals the token itself.
+ */
+function doGet() {
+  const sheet = SpreadsheetApp
+    .getActiveSpreadsheet()
+    .getSheetByName(SHEET_NAME);
+
+  return reply({
+    ok: true,
+    service: 'wedding-messages',
+    sheetFound: Boolean(sheet),
+    rows: sheet ? Math.max(0, sheet.getLastRow() - 1) : 0,
+    tokenSet: TOKEN !== 'replace-me-with-a-long-random-string',
+    tokenLength: String(TOKEN).length,
+    deployedAt: new Date().toISOString(),
+  });
+}
+
 function doPost(e) {
   try {
     if (!e || !e.postData || !e.postData.contents) {
@@ -173,6 +194,27 @@ are only picked up by a fresh build.
 
 For local development, put the same two lines in a `.env.local` file — see
 `.env.example`.
+
+---
+
+## 4b. Confirm the script itself is alive
+
+Paste the `/exec` URL into a browser. You should get JSON like:
+
+```json
+{"ok":true,"service":"wedding-messages","sheetFound":true,"rows":0,"tokenSet":true,"tokenLength":32}
+```
+
+| What you get | Meaning |
+| --- | --- |
+| The JSON above | The script is healthy; any failure is the URL or token in Vercel |
+| `sheetFound: false` | The tab is not named `Messages`, or the script is not bound to this Sheet |
+| `tokenSet: false` | You never changed `TOKEN` from the placeholder |
+| A Google **sign-in page** | The deployment is not shared with **Anyone** |
+| `Script function not found: doGet` | You are running an **older deployment** — redeploy a new version |
+
+That last one is the trap worth remembering: editing and saving the script
+changes nothing on the live URL until you deploy.
 
 ---
 
