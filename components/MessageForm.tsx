@@ -134,7 +134,7 @@ export function MessageForm() {
 
             {status === "failed" ? (
               <p role="alert" className="font-serif text-meta text-accent-red">
-                That did not go through. Your message is still here â€” try
+                That did not go through. Your message is still here &mdash; try
                 sending it again.
               </p>
             ) : null}

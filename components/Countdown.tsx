@@ -39,12 +39,15 @@ export function Countdown({ targetIso, closing }: CountdownProps) {
     useCountdown(targetIso);
   const reduced = useReducedMotion();
 
-  // Dashes on the server and on the first client paint â€” no mismatch.
+  // Dashes on the server and on the first client paint - no mismatch.
+  // Hoisted to a constant because this en dash was once mangled into
+  // mojibake by a bulk rewrite; one place to check beats four.
+  const DASH = "–";
   const cells = [
-    { label: "Days", value: isReady ? String(days) : "â€“" },
-    { label: "Hours", value: isReady ? String(hours).padStart(2, "0") : "â€“" },
-    { label: "Minutes", value: isReady ? String(minutes).padStart(2, "0") : "â€“" },
-    { label: "Seconds", value: isReady ? String(seconds).padStart(2, "0") : "â€“" },
+    { label: "Days", value: isReady ? String(days) : DASH },
+    { label: "Hours", value: isReady ? String(hours).padStart(2, "0") : DASH },
+    { label: "Minutes", value: isReady ? String(minutes).padStart(2, "0") : DASH },
+    { label: "Seconds", value: isReady ? String(seconds).padStart(2, "0") : DASH },
   ];
 
   return (
