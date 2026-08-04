@@ -145,8 +145,23 @@ function doPost(e) {
 
 ## 4. Tell the website about it
 
-In Vercel: **your project → Settings → Environment Variables**. Add two, for
-all environments:
+In Vercel, open your project and go to:
+
+```
+Settings -> Environment Variables
+```
+
+The quickest route is to take your project's URL and append
+`/settings/environment-variables`.
+
+> **Do not click "Create Environment" on the Settings → Environments page.**
+> That makes an extra custom environment (a separate staging site) and is a
+> paid Pro feature. It has nothing to do with this. You only need to add
+> variables to the Production / Preview / Development environments that already
+> exist, which costs nothing. If the Environments page is all you can see,
+> click the **Production** row to reach its variables.
+
+Add two, ticked for **Production, Preview and Development**:
 
 | Key | Value |
 | --- | --- |
