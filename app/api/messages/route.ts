@@ -55,14 +55,22 @@ export async function POST(request: Request) {
 
     // Apps Script answers 200 whatever happens, so the body is the real
     // outcome — checking response.ok alone would report false successes.
-    const result = (await response.json().catch(() => null)) as {
-      ok?: boolean;
-      error?: string;
-    } | null;
+    const raw = await response.text();
+
+    let result: { ok?: boolean; error?: string } | null = null;
+    try {
+      result = JSON.parse(raw);
+    } catch {
+      // Left null: a non-JSON reply is almost always Google's sign-in page,
+      // which means the deployment's "Who has access" is not set to Anyone.
+    }
 
     if (!response.ok || !result?.ok) {
       throw new Error(
-        `webhook rejected: ${response.status} ${result?.error ?? "no ok flag"}`,
+        `webhook rejected (HTTP ${response.status}): ${
+          result?.error ??
+          `reply was not JSON, which usually means the Apps Script deployment is not set to "Anyone". First 200 characters: ${raw.slice(0, 200)}`
+        }`,
       );
     }
 
