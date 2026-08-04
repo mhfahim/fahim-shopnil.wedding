@@ -1,26 +1,24 @@
 import { NextResponse } from "next/server";
-import { messageSchema, type MessagePayload } from "@/lib/rsvp";
+import { messageSchema } from "@/lib/rsvp";
 
-interface StoredMessage extends MessagePayload {
-  receivedAt: string;
-}
+const WEBHOOK_URL = process.env.MESSAGES_WEBHOOK_URL;
+const WEBHOOK_TOKEN = process.env.MESSAGES_WEBHOOK_TOKEN;
 
 /**
- * TODO: swap for a database or a Google Sheet webhook.
- * This array lives in the server process and is lost on restart — it is a
- * placeholder so the form has a real endpoint to talk to, nothing more.
+ * Guests' messages go to a Google Sheet through an Apps Script web app.
+ * See docs/messages-setup.md.
+ *
+ * Nothing here ever answers "ok" unless the message really landed. A guest
+ * seeing "Thank you" for a message that was quietly dropped is the one
+ * outcome worth avoiding: the form's retry path keeps what they typed, so a
+ * visible failure is recoverable and a silent one is not.
  */
-const messages: StoredMessage[] = [];
-
 export async function POST(request: Request) {
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { error: "Expected a JSON body" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Expected a JSON body" }, { status: 400 });
   }
 
   const parsed = messageSchema.safeParse(body);
@@ -31,7 +29,53 @@ export async function POST(request: Request) {
     );
   }
 
-  messages.push({ ...parsed.data, receivedAt: new Date().toISOString() });
+  if (!WEBHOOK_URL || !WEBHOOK_TOKEN) {
+    // A deploy-time mistake, not the guest's fault. Log the message so it is
+    // at least recoverable from the runtime logs, and fail visibly so the
+    // misconfiguration surfaces the first time anyone tests the form.
+    console.error(
+      "[messages] MESSAGES_WEBHOOK_URL / MESSAGES_WEBHOOK_TOKEN are not set. Message not stored:",
+      JSON.stringify(parsed.data),
+    );
+    return NextResponse.json(
+      { error: "Messages are not configured" },
+      { status: 500 },
+    );
+  }
 
-  return NextResponse.json({ ok: true }, { status: 201 });
+  try {
+    const response = await fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: WEBHOOK_TOKEN, ...parsed.data }),
+      // Apps Script follows a redirect to googleusercontent before replying.
+      redirect: "follow",
+      signal: AbortSignal.timeout(10_000),
+    });
+
+    // Apps Script answers 200 whatever happens, so the body is the real
+    // outcome — checking response.ok alone would report false successes.
+    const result = (await response.json().catch(() => null)) as {
+      ok?: boolean;
+      error?: string;
+    } | null;
+
+    if (!response.ok || !result?.ok) {
+      throw new Error(
+        `webhook rejected: ${response.status} ${result?.error ?? "no ok flag"}`,
+      );
+    }
+
+    return NextResponse.json({ ok: true }, { status: 201 });
+  } catch (error) {
+    console.error(
+      "[messages] delivery failed. Message was:",
+      JSON.stringify(parsed.data),
+      error,
+    );
+    return NextResponse.json(
+      { error: "Could not deliver the message" },
+      { status: 502 },
+    );
+  }
 }
